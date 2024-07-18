@@ -49,9 +49,9 @@ def user_onboarding():
         uploaded_files = st.file_uploader("Choose files", accept_multiple_files=True)
         finish_upload = st.button('FINISH UPLOAD')
         
-        st.write("Upload a dummy file (will not be processed):")
-        dummy_uploaded_files = st.file_uploader("Choose dummy files", accept_multiple_files=True, key="dummy_files")
-        finish_dummy_upload = st.button('FINISH DUMMY UPLOAD')
+        st.write("Upload the book or materials file (will not be processed):")
+        dummy_uploaded_files = st.file_uploader("Choose book files", accept_multiple_files=True, key="dummy_files")
+        finish_dummy_upload = st.button('FINISH BOOK UPLOAD')
 
         if finish_upload and uploaded_files:
             saved_file_names = []
