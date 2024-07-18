@@ -99,4 +99,7 @@ def user_onboarding():
                 except Exception as e:
                     st.error(f"Error during onboarding process: {e}")
 
-# Ensure STORAGE_PATH and INDEX_STORAGE are defined correctly in global_settings.py
+if __name__ == "__main__":
+    # Set your API key here
+    os.environ['OPENAI_API_KEY'] = "sk-proj-5aKGatZjmSTTTw8ECCdrT3BlbkFJr0iA8aQPhw918xDDLuCi"
+    user_onboarding()
