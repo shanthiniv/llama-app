@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import pdfplumber
 from session_functions import save_session
 from logging_functions import log_action
 from global_settings import STORAGE_PATH, INDEX_STORAGE
@@ -8,16 +9,18 @@ from training_material_builder import generate_slides
 from index_builder import build_indexes
 from quiz_builder import build_quiz
 import pandas as pd
-from PyPDF2 import PdfFileReader
 
 def show_first_two_pages(file_path):
     try:
-        with open(file_path, 'rb') as f:
-            pdf = PdfFileReader(f)
-            num_pages = min(2, pdf.getNumPages())
+        with pdfplumber.open(file_path) as pdf:
+            num_pages = min(2, len(pdf.pages))
             for page_num in range(num_pages):
-                page = pdf.getPage(page_num)
-                st.write(page.extractText())
+                page = pdf.pages[page_num]
+                text = page.extract_text()
+                if text:
+                    st.write(text)
+                else:
+                    st.write("No text found on this page.")
     except Exception as e:
         st.error(f"Error reading {file_path}: {e}")
 
@@ -119,5 +122,5 @@ def user_onboarding():
 
 if __name__ == "__main__":
     # Set your API key here
-    os.environ['OPENAI_API_KEY'] = ""
+    os.environ['OPENAI_API_KEY'] = "sk-None-c55Aikf60LUmG7IrZWrbT3BlbkFJeIhPXFFyz7CxbAsbdIwu"
     user_onboarding()
