@@ -8,6 +8,18 @@ from training_material_builder import generate_slides
 from index_builder import build_indexes
 from quiz_builder import build_quiz
 import pandas as pd
+from PyPDF2 import PdfFileReader
+
+def show_first_two_pages(file_path):
+    try:
+        with open(file_path, 'rb') as f:
+            pdf = PdfFileReader(f)
+            num_pages = min(2, pdf.getNumPages())
+            for page_num in range(num_pages):
+                page = pdf.getPage(page_num)
+                st.write(page.extractText())
+    except Exception as e:
+        st.error(f"Error reading {file_path}: {e}")
 
 def user_onboarding():
     # Ensure necessary directories exist
@@ -77,6 +89,9 @@ def user_onboarding():
                     st.info('Indexing complete. Generating quiz...')
                     quiz = build_quiz(study_subject)
                     st.session_state['show_quiz'] = True
+                    for file_name in st.session_state.get('uploaded_files', []):
+                        st.write(f"First two pages of {file_name}:")
+                        show_first_two_pages(os.path.join(STORAGE_PATH, file_name))
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error during quiz preparation: {e}")
@@ -95,11 +110,14 @@ def user_onboarding():
                     st.info('Materials loaded. Preparing indexes...')
                     keyword_index, vector_index = build_indexes(nodes)
                     st.info('Indexing complete. Generating slides...')
+                    for file_name in st.session_state.get('uploaded_files', []):
+                        st.write(f"First two pages of {file_name}:")
+                        show_first_two_pages(os.path.join(STORAGE_PATH, file_name))
                     generate_slides(study_subject)
                 except Exception as e:
                     st.error(f"Error during onboarding process: {e}")
 
 if __name__ == "__main__":
     # Set your API key here
-    os.environ['OPENAI_API_KEY'] = "sk-None-c55Aikf60LUmG7IrZWrbT3BlbkFJeIhPXFFyz7CxbAsbdIwu"
+    os.environ['OPENAI_API_KEY'] = ""
     user_onboarding()
