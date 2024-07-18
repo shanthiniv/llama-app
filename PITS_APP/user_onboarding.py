@@ -86,10 +86,17 @@ def user_onboarding():
             if difficulty_level == 'Take a quiz to assess':
                 st.info('Proceeding to quiz. Ingesting study materials first...')
                 try:
+                    log_action(f"Starting document ingestion for quiz.", "INFO")
                     nodes = ingest_documents()
+                    log_action(f"Document ingestion completed.", "INFO")
+                    
                     st.info('Materials loaded. Preparing indexes...')
+                    log_action(f"Starting index preparation.", "INFO")
                     keyword_index, vector_index = build_indexes(nodes)
+                    log_action(f"Index preparation completed.", "INFO")
+                    
                     st.info('Indexing complete. Generating quiz...')
+                    log_action(f"Starting quiz generation.", "INFO")
                     quiz = build_quiz(study_subject)
                     st.session_state['show_quiz'] = True
                     for file_name in st.session_state.get('uploaded_files', []):
@@ -97,6 +104,7 @@ def user_onboarding():
                         show_first_two_pages(os.path.join(STORAGE_PATH, file_name))
                     st.rerun()
                 except Exception as e:
+                    log_action(f"Error during quiz preparation: {e}", "ERROR")
                     st.error(f"Error during quiz preparation: {e}")
             else:
                 try:
@@ -109,15 +117,24 @@ def user_onboarding():
                     )
                     st.info(f'Proceeding with difficulty level {difficulty_level}')
                     st.info('Ingesting study materials first...')
+                    log_action(f"Starting document ingestion.", "INFO")
                     nodes = ingest_documents()
+                    log_action(f"Document ingestion completed.", "INFO")
+                    
                     st.info('Materials loaded. Preparing indexes...')
+                    log_action(f"Starting index preparation.", "INFO")
                     keyword_index, vector_index = build_indexes(nodes)
+                    log_action(f"Index preparation completed.", "INFO")
+                    
                     st.info('Indexing complete. Generating slides...')
+                    log_action(f"Starting slide generation.", "INFO")
                     for file_name in st.session_state.get('uploaded_files', []):
                         st.write(f"First two pages of {file_name}:")
                         show_first_two_pages(os.path.join(STORAGE_PATH, file_name))
                     generate_slides(study_subject)
+                    log_action(f"Slide generation completed.", "INFO")
                 except Exception as e:
+                    log_action(f"Error during onboarding process: {e}", "ERROR")
                     st.error(f"Error during onboarding process: {e}")
 
 if __name__ == "__main__":
