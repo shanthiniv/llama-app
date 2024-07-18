@@ -2,7 +2,7 @@ import streamlit as st
 import os
 from session_functions import save_session
 from logging_functions import log_action
-from global_settings import STORAGE_PATH
+from global_settings import STORAGE_PATH, INDEX_STORAGE
 from document_uploader import ingest_documents
 from training_material_builder import generate_slides
 from index_builder import build_indexes
@@ -10,14 +10,20 @@ from quiz_builder import build_quiz
 import pandas as pd
 
 def user_onboarding():
+    # Ensure necessary directories exist
+    os.makedirs(STORAGE_PATH, exist_ok=True)
+    os.makedirs(INDEX_STORAGE, exist_ok=True)
+
     user_name = st.text_input('What is your name?')
-    if not user_name: return
+    if not user_name:
+        return
 
     st.session_state['user_name'] = user_name
     st.write(f"Hello {user_name}. It's nice meeting you!")
     
     study_subject = st.text_input('What subject would you like to study?')
-    if not study_subject: return
+    if not study_subject:
+        return
 
     st.session_state['study_subject'] = study_subject
     st.write(f"Okay {user_name}, let's focus on {study_subject}.")
@@ -35,12 +41,16 @@ def user_onboarding():
 
         if finish_upload and uploaded_files:
             saved_file_names = []
+
             for uploaded_file in uploaded_files:
                 file_path = os.path.join(STORAGE_PATH, uploaded_file.name)
-                with open(file_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                saved_file_names.append(uploaded_file.name)
-                st.write(f"You have uploaded {uploaded_file.name}")
+                try:
+                    with open(file_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+                    saved_file_names.append(uploaded_file.name)
+                    st.write(f"You have uploaded {uploaded_file.name}")
+                except Exception as e:
+                    st.error(f"Error uploading file {uploaded_file.name}: {e}")
 
             st.session_state['uploaded_files'] = saved_file_names
             st.session_state['finish_upload'] = True
@@ -60,27 +70,33 @@ def user_onboarding():
             save_session(st.session_state)
             if difficulty_level == 'Take a quiz to assess':
                 st.info('Proceeding to quiz. Ingesting study materials first...')
-                nodes = ingest_documents()
-                st.info('Materials loaded. Preparing indexes...')
-                keyword_index , vector_index = build_indexes (nodes)
-                st.info('Indexing complete. Generating quiz...')
-                quiz = build_quiz(study_subject)
-                st.session_state['show_quiz'] = True
-                st.rerun()
-                st.info('Indexing complete. Generating slides...')
-                generate_slides(study_subject)
+                try:
+                    nodes = ingest_documents()
+                    st.info('Materials loaded. Preparing indexes...')
+                    keyword_index, vector_index = build_indexes(nodes)
+                    st.info('Indexing complete. Generating quiz...')
+                    quiz = build_quiz(study_subject)
+                    st.session_state['show_quiz'] = True
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error during quiz preparation: {e}")
             else:
-                log_action(
-                    f"{user_name} wants to study the topic of {study_subject}, "
-                    f"aiming to achieve the following goal: '{study_goal}'. "
-                    f"The user uploaded {len(uploaded_files)} files and has self-assessed "
-                    f"their current knowledge on the topic as {difficulty_level}",
-                    action_type="ONBOARDING"
-                )
-                st.info(f'Proceeding with difficulty level {difficulty_level}')
-                st.info('Ingesting study materials first...')
-                nodes = ingest_documents()
-                st.info('Materials loaded. Preparing indexes...')
-                keyword_index , vector_index = build_indexes (nodes)
-                st.info('Indexing complete. Generating slides...')
-                generate_slides(study_subject)
+                try:
+                    log_action(
+                        f"{user_name} wants to study the topic of {study_subject}, "
+                        f"aiming to achieve the following goal: '{study_goal}'. "
+                        f"The user uploaded {len(st.session_state.get('uploaded_files', []))} files and has self-assessed "
+                        f"their current knowledge on the topic as {difficulty_level}",
+                        action_type="ONBOARDING"
+                    )
+                    st.info(f'Proceeding with difficulty level {difficulty_level}')
+                    st.info('Ingesting study materials first...')
+                    nodes = ingest_documents()
+                    st.info('Materials loaded. Preparing indexes...')
+                    keyword_index, vector_index = build_indexes(nodes)
+                    st.info('Indexing complete. Generating slides...')
+                    generate_slides(study_subject)
+                except Exception as e:
+                    st.error(f"Error during onboarding process: {e}")
+
+# Ensure STORAGE_PATH and INDEX_STORAGE are defined correctly in global_settings.py
