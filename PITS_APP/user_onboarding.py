@@ -101,5 +101,5 @@ def user_onboarding():
 
 if __name__ == "__main__":
     # Set your API key here
-    os.environ['OPENAI_API_KEY'] = "sk-proj-5aKGatZjmSTTTw8ECCdrT3BlbkFJr0iA8aQPhw918xDDLuCi"
+    os.environ['OPENAI_API_KEY'] = "sk-None-c55Aikf60LUmG7IrZWrbT3BlbkFJeIhPXFFyz7CxbAsbdIwu"
     user_onboarding()
