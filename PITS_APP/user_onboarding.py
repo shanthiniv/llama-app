@@ -4,10 +4,6 @@ import pdfplumber
 from session_functions import save_session
 from logging_functions import log_action
 from global_settings import STORAGE_PATH, INDEX_STORAGE
-from document_uploader import ingest_documents
-from training_material_builder import generate_slides
-from index_builder import build_indexes
-from quiz_builder import build_quiz
 
 def show_first_two_pages(file_path):
     try:
@@ -52,6 +48,10 @@ def user_onboarding():
         st.write("Do you want to upload any study materials?")
         uploaded_files = st.file_uploader("Choose files", accept_multiple_files=True)
         finish_upload = st.button('FINISH UPLOAD')
+        
+        st.write("Upload a dummy file (will not be processed):")
+        dummy_uploaded_files = st.file_uploader("Choose dummy files", accept_multiple_files=True, key="dummy_files")
+        finish_dummy_upload = st.button('FINISH DUMMY UPLOAD')
 
         if finish_upload and uploaded_files:
             saved_file_names = []
@@ -69,7 +69,11 @@ def user_onboarding():
             st.session_state['uploaded_files'] = saved_file_names
             st.session_state['finish_upload'] = True
             st.info('Uploading files...')
-    
+
+        if finish_dummy_upload and dummy_uploaded_files:
+            for dummy_file in dummy_uploaded_files:
+                st.write(f"Dummy file {dummy_file.name} has been uploaded.")
+
     if 'finish_upload' in st.session_state or 'difficulty_level' in st.session_state:
         st.write('Please select your current knowledge level on the topic')
         difficulty_level = st.radio(
