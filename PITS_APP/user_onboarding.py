@@ -8,7 +8,6 @@ from document_uploader import ingest_documents
 from training_material_builder import generate_slides
 from index_builder import build_indexes
 from quiz_builder import build_quiz
-import pandas as pd
 
 def show_first_two_pages(file_path):
     try:
@@ -83,59 +82,9 @@ def user_onboarding():
         
         if proceed_button:
             save_session(st.session_state)
-            if difficulty_level == 'Take a quiz to assess':
-                st.info('Proceeding to quiz. Ingesting study materials first...')
-                try:
-                    log_action(f"Starting document ingestion for quiz.", "INFO")
-                    nodes = ingest_documents()
-                    log_action(f"Document ingestion completed.", "INFO")
-                    
-                    st.info('Materials loaded. Preparing indexes...')
-                    log_action(f"Starting index preparation.", "INFO")
-                    keyword_index, vector_index = build_indexes(nodes)
-                    log_action(f"Index preparation completed.", "INFO")
-                    
-                    st.info('Indexing complete. Generating quiz...')
-                    log_action(f"Starting quiz generation.", "INFO")
-                    quiz = build_quiz(study_subject)
-                    st.session_state['show_quiz'] = True
-                    for file_name in st.session_state.get('uploaded_files', []):
-                        st.write(f"First two pages of {file_name}:")
-                        show_first_two_pages(os.path.join(STORAGE_PATH, file_name))
-                    st.rerun()
-                except Exception as e:
-                    log_action(f"Error during quiz preparation: {e}", "ERROR")
-                    st.error(f"Error during quiz preparation: {e}")
-            else:
-                try:
-                    log_action(
-                        f"{user_name} wants to study the topic of {study_subject}, "
-                        f"aiming to achieve the following goal: '{study_goal}'. "
-                        f"The user uploaded {len(st.session_state.get('uploaded_files', []))} files and has self-assessed "
-                        f"their current knowledge on the topic as {difficulty_level}",
-                        action_type="ONBOARDING"
-                    )
-                    st.info(f'Proceeding with difficulty level {difficulty_level}')
-                    st.info('Ingesting study materials first...')
-                    log_action(f"Starting document ingestion.", "INFO")
-                    nodes = ingest_documents()
-                    log_action(f"Document ingestion completed.", "INFO")
-                    
-                    st.info('Materials loaded. Preparing indexes...')
-                    log_action(f"Starting index preparation.", "INFO")
-                    keyword_index, vector_index = build_indexes(nodes)
-                    log_action(f"Index preparation completed.", "INFO")
-                    
-                    st.info('Indexing complete. Generating slides...')
-                    log_action(f"Starting slide generation.", "INFO")
-                    for file_name in st.session_state.get('uploaded_files', []):
-                        st.write(f"First two pages of {file_name}:")
-                        show_first_two_pages(os.path.join(STORAGE_PATH, file_name))
-                    generate_slides(study_subject)
-                    log_action(f"Slide generation completed.", "INFO")
-                except Exception as e:
-                    log_action(f"Error during onboarding process: {e}", "ERROR")
-                    st.error(f"Error during onboarding process: {e}")
+            for file_name in st.session_state.get('uploaded_files', []):
+                st.write(f"First two pages of {file_name}:")
+                show_first_two_pages(os.path.join(STORAGE_PATH, file_name))
 
 if __name__ == "__main__":
     # Set your API key here
